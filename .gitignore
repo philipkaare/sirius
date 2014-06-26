@@ -1,0 +1,4 @@
+*.suo
+Sirius/bin/
+Sirius/obj/
+Sirius/Properties/AssemblyInfo.cs

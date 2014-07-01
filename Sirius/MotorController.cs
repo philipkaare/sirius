@@ -1,11 +1,13 @@
 using System;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
+using SecretLabs.NETMF.Hardware.Netduino;
 
 namespace Sirius
 {
     public class MotorController : IDisposable
     {
+        private double _speed;
         PWM forwardpwm; 
         PWM reversepwm; 
 
@@ -14,17 +16,17 @@ namespace Sirius
             switch (DIO_pin)
             {
                 case 3:
-                    return Cpu.PWMChannel.PWM_4;
+                    return PWMChannels.PWM_PIN_D3;
                 case 5:
-                    return Cpu.PWMChannel.PWM_0;
+                    return PWMChannels.PWM_PIN_D5;
                 case 6:
-                    return Cpu.PWMChannel.PWM_1;
+                    return PWMChannels.PWM_PIN_D6;
                 case 9:
-                    return Cpu.PWMChannel.PWM_2;
+                    return PWMChannels.PWM_PIN_D9;
                 case 10:
-                    return Cpu.PWMChannel.PWM_3;
+                    return PWMChannels.PWM_PIN_D10;
                 case 11:
-                    return Cpu.PWMChannel.PWM_5;
+                    return PWMChannels.PWM_PIN_D11;
 
                 default: return Cpu.PWMChannel.PWM_NONE;
             }
@@ -47,9 +49,10 @@ namespace Sirius
 
         public double Speed
         {
-            get { return Speed; }
+            get { return _speed; }
             set
             {
+                _speed = value;
                 if (value > 0)
                 {
                     forwardpwm.DutyCycle = value;

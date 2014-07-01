@@ -19,7 +19,7 @@ namespace Sirius
             //backlight connected to D10
             // create the transfer provider
             // Initialize the library with the numbers of the interface pins
-            var LcdProvidor = new GpioLcdTransferProvider(Pins.GPIO_PIN_D8, Pins.GPIO_PIN_D0, Pins.GPIO_PIN_D4, Pins.GPIO_PIN_D5, Pins.GPIO_PIN_D6, Pins.GPIO_PIN_D7);           
+            var LcdProvidor = new GpioLcdTransferProvider(Pins.GPIO_PIN_D8, Pins.GPIO_PIN_D0, Pins.GPIO_PIN_D4, Pins.GPIO_PIN_D5, Pins.GPIO_PIN_D12, Pins.GPIO_PIN_D7);           
             //Debug.Print(LcdProvidor.FourBitMode.ToString());            
             var lcd = new Lcd(LcdProvidor);
             Thread.Sleep(40);
@@ -44,7 +44,7 @@ namespace Sirius
             var lastTime = DateTime.Now;
 
             var m = new MotorController(3, 9);
-            var m2 = new MotorController(10, 11);
+            var m2 = new MotorController(6, 11);
             var pid = new PID4Life();
 
             

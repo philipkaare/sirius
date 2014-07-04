@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NetMf.CommonExtensions</id>
+    <version>1.1.2</version>
+    <title>.NET Micro Framework - Common Extensions</title>
+    <authors>mcdermottr</authors>
+    <owners>mcdermottr</owners>
+    <projectUrl>http://netmfcommonext.codeplex.com/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>".NET Micro Framework - Common Extensions" is designed to provide additional functionality to the core .NET Micro framework to fill common usage gaps between NetMf and it's bigger .NET framework cousins.</description>
+    <summary>.NET Micro Framework - Common Extensions</summary>
+    <tags>netmf netmfcommonext</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="Microsoft.SPOT.Native" targetFramework=".NETMicroFramework4.1" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

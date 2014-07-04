@@ -37,7 +37,7 @@ namespace ExampleAccelGyroSensor.I2C_Hardware
         public int Write(byte[] writeBuffer)
         {
             // Byte Array übergeben für das ertellen einer Transaction
-            I2CDevice.I2CTransaction[] writeTransaction = new I2CDevice.I2CTransaction[]
+            var writeTransaction = new I2CDevice.I2CTransaction[]
             { 
                 I2CDevice.CreateWriteTransaction(writeBuffer) 
             };
@@ -59,12 +59,12 @@ namespace ExampleAccelGyroSensor.I2C_Hardware
         public int Read(byte[] readBuffer)
         {
             // Erstelle ein Transaction zum Lesen mit übergabe des Byte Array        
-            I2CDevice.I2CTransaction[] readTransaction = new I2CDevice.I2CTransaction[]
+            var readTransaction = new I2CDevice.I2CTransaction[]
             {
                 I2CDevice.CreateReadTransaction(readBuffer)        
             };
             // Lese die Daten von der Hardware. Timeout von einer Sekunde     
-            int read = this._Device.Execute(readTransaction, 1000);
+            int read = _Device.Execute(readTransaction, 1000);
 
             // Prüfe, ob die Daten gesendt wurden      
             if (read != readBuffer.Length)

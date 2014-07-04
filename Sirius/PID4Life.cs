@@ -8,7 +8,7 @@ namespace Sirius
         double _integral=0;
         double _previous_error=0;
 
-        double K_p=0.2, K_i=0.006, K_d=0.4;
+        public double K_p=3.5, K_i=0.000, K_d=0;
 
         public double GetCorrection(double measured_angle, double dt)
         {

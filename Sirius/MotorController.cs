@@ -8,8 +8,8 @@ namespace Sirius
     public class MotorController : IDisposable
     {
         private double _speed;
-        PWM forwardpwm; 
-        PWM reversepwm; 
+        readonly PWM _forwardpwm;
+        readonly PWM _reversepwm; 
 
         private Cpu.PWMChannel GetChannel(int DIO_pin)
         {
@@ -32,19 +32,19 @@ namespace Sirius
             }
         }
 
-        public MotorController(int forward_pin, int reverse_pin)
+        public MotorController(int forwardPin, int reversePin)
         {
-            forwardpwm = new PWM(GetChannel(forward_pin),100,0,false);
-            reversepwm= new PWM(GetChannel(reverse_pin),100, 0, false);
+            _forwardpwm = new PWM(GetChannel(forwardPin),100,0,false);
+            _reversepwm= new PWM(GetChannel(reversePin),100, 0, false);
 
-            forwardpwm.Start();
-            reversepwm.Start();       
+            _forwardpwm.Start();
+            _reversepwm.Start();       
         }
 
         public void Dispose()
         {
-            forwardpwm.Stop();
-            reversepwm.Stop();
+            _forwardpwm.Stop();
+            _reversepwm.Stop();
         }
 
         public double Speed
@@ -55,13 +55,13 @@ namespace Sirius
                 _speed = value;
                 if (value > 0)
                 {
-                    forwardpwm.DutyCycle = value;
-                    reversepwm.DutyCycle = 0;
+                    _forwardpwm.DutyCycle = value;
+                    _reversepwm.DutyCycle = 0;
                 }
                 else
                 {
-                    forwardpwm.DutyCycle = 0;
-                    reversepwm.DutyCycle = -value;
+                    _forwardpwm.DutyCycle = 0;
+                    _reversepwm.DutyCycle = -value;
                 }
 
             }

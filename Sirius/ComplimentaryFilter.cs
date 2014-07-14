@@ -6,8 +6,10 @@ namespace Sirius
 {
     public class ComplimentaryFilter
     {
-        double angle;
-        const double tau=0.1;
+        double _angle;
+        const double Tau=0;
+        private double _capacitorState = 0;
+        private double _c=0.001;
 
         public ComplimentaryFilter()
         {
@@ -16,10 +18,17 @@ namespace Sirius
 
         public double GetAngle(AccelerationAndGyroData data, double dt)
         {
-            double a = tau/(tau+dt);
+            double a = Tau/(Tau+dt);
             
-            angle = a * (data.GetPitchVelocity() * dt + angle) + (1-a) * data.GetPitchAngle();
-            return angle;
+            _angle = a * (data.GetPitchVelocity() * dt + _angle) + (1-a) * GetLowPassValue(data.GetPitchAngle(),dt);
+            return _angle;
+        }
+
+        public double GetLowPassValue(double value, double dt)
+        {
+            Debug.Print(_capacitorState.ToString());
+            _capacitorState -= (_capacitorState - value)*_c*dt;
+            return _capacitorState;
         }
     }
 }

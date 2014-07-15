@@ -37,6 +37,7 @@
   <ItemGroup>
     <Compile Include="ComplimentaryFilter.cs" />
     <Compile Include="I2C_Hardware\I2C_Connector.cs" />
+    <Compile Include="LowPassFilter.cs" />
     <Compile Include="MotorController.cs" />
     <Compile Include="PID4Life.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

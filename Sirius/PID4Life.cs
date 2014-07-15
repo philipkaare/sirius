@@ -8,7 +8,7 @@ namespace Sirius
         double _integral=0;
         double _previousError=0;
 
-        public double K_p=3.5, K_i=0.000, K_d=0;
+        public double K_p, K_i, K_d, target;
 
         public void Reset()
         {
@@ -16,9 +16,18 @@ namespace Sirius
             _previousError = 0;
         }
 
-        public double GetCorrection(double measuredAngle, double dt)
+        public PID4Life(double p, double i, double d, double targetValue)
         {
-            var error = measuredAngle;
+            K_p = p;
+            K_i = i;
+            K_d = d;
+            target = targetValue;
+
+        }
+
+        public double GetCorrection(double inputValue, double dt)
+        {
+            var error = inputValue-target;
             _integral = _integral + error*dt;
             var derivative = (error - _previousError)/dt;
             _previousError = error;

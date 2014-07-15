@@ -26,7 +26,6 @@ namespace Sirius
             
         private static OutputPort _ledPort = new OutputPort(Pins.ONBOARD_LED, false);
 
-
         private static readonly MPU6050 Mpu6050 = new MPU6050();
         private static readonly ComplimentaryFilter Filter = new ComplimentaryFilter();
         private static readonly MotorController Motor1 = new MotorController(9, 3);
@@ -36,7 +35,10 @@ namespace Sirius
 
         private static readonly Lcd Lcd = new Lcd(LcdProvider);
 
-        private static readonly PID4Life Pid = new PID4Life();
+        private static readonly PID4Life AnglePid = new PID4Life(250,0,-2.5,0);
+        private static readonly PID4Life VelocityPid = new PID4Life(1, 0, 0, 0);
+
+        private static readonly LowPassFilter VelocityLowPassFilter = new LowPassFilter(10);
 
         private static long _channel1UpTimestamp = 0;
         private static double _channel1Value = 0;
@@ -48,7 +50,7 @@ namespace Sirius
         {
             lcd.Clear();
             lcd.SetCursorPosition(0,0);
-            lcd.Write(StringUtility.Format("P{0:F1}I.{1:D3}D{2:F2}", pid4Life.K_p, (int)(pid4Life.K_i * 1000.0), pid4Life.K_d));
+            lcd.Write(StringUtility.Format("P{0:D3}I.{1:D3}D{2:F1}", (int)pid4Life.K_p, (int)(pid4Life.K_i * 1000.0), pid4Life.K_d));
             switch (activeValue)
             {
                 case 0:
@@ -72,20 +74,19 @@ namespace Sirius
             switch (activeValue)
             {
                 case 0:
-                    pid.K_p += up ? 0.1 : -0.1;
+                    pid.K_p += up ? 10 : -10;
                     break;
                 case 1:
                     pid.K_i += up ? 0.001 : -0.001;
                     break;
                 case 2:
-                    pid.K_d += up ? 0.01 : -0.01;
+                    pid.K_d += up ? 0.1 : -0.1;
                     break;
             }
         }
 
         public static void Initialize()
-        {
-            
+        {   
             Channel1.OnInterrupt += (data1, data2, time) =>
             {
                 if (_channel1UpTimestamp == 0 && data2 == 1) //High edge
@@ -138,17 +139,17 @@ namespace Sirius
 
             else if (_channel2Value < -0.3 && Utility.GetMachineTime().Ticks - _lastKeyInput > 5 * 1000000)
             {
-                StepActive(Pid, _activeValue, false);
+                StepActive(AnglePid, _activeValue, false);
             }
             else if (_channel2Value > 0.3 && Utility.GetMachineTime().Ticks - _lastKeyInput > 5*1000000)
             {
-                StepActive(Pid, _activeValue, true);
+                StepActive(AnglePid, _activeValue, true);
             }
             else return;
 
             _lastKeyInput = Utility.GetMachineTime().Ticks;
-            //DisplayPidValues(Pid, Lcd, _activeValue);
-            Pid.Reset();
+            DisplayPidValues(AnglePid, Lcd, _activeValue);
+            AnglePid.Reset();
             FailSafeEnabled = false;
         }
 
@@ -158,28 +159,32 @@ namespace Sirius
             InitLcd();
             Initialize();
 
-            DisplayPidValues(Pid, Lcd, _activeValue);
+            DisplayPidValues(AnglePid, Lcd, _activeValue);
 
             while (true)
             {
                 var now = DateTime.Now;
-                var dt = now - lastTime;
+                var dt = (now - lastTime).Ticks / 10000000.0;
                 lastTime = now;
 
                 ReadRadioKey();
 
                 var sensorResult = Mpu6050.GetSensorData();
-                var angle = Filter.GetAngle(sensorResult, (double)dt.Ticks / 1000);
-                var speed = Pid.GetCorrection(angle,(double)dt.Ticks / 1000);
+                var angle = Filter.GetAngle(sensorResult, dt);
+                var speed = AnglePid.GetCorrection(angle,dt);
 
-                if (Math.Abs(angle) > 0.3) FailSafeEnabled = true;
+                VelocityPid.target = 0;//_channel2Value;
+                AnglePid.target = 0;//VelocityPid.GetCorrection(VelocityLowPassFilter.GetLowPassValue(speed, dt), dt);
+                Debug.Print(AnglePid.target.ToString());
+
+                if (Math.Abs(angle) > 0.5) 
+                    FailSafeEnabled = true;
 
                 if (FailSafeEnabled)
                 {
                     speed = 0;
                     Debug.Print("Failsafe engaged");
-                }
-                    
+                }   
 
                 Motor1.Speed = speed;
                 Motor2.Speed = speed;

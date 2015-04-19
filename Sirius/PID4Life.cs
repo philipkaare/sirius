@@ -29,9 +29,10 @@ namespace Sirius
         {
             var error = inputValue-target;
             _integral = _integral + error*dt;
-            var derivative = (error - _previousError)/dt;
+            var derivative =(error - _previousError)/dt;
             _previousError = error;
-            var res = K_p * error + K_i * _integral + K_d * derivative;
+            var res = (K_p * error + K_i * _integral + K_d * derivative)/10.0;
+
             if (res > 1) res = 1;
             if (res < -1) res = -1;
 

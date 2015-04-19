@@ -6,10 +6,11 @@ namespace Sirius
 {
     public class ComplimentaryFilter
     {
+        /*
         double _angle;
-        const double Tau=0;
+        const double Tau=0.01;
 
-        readonly LowPassFilter _lowPassFilter = new LowPassFilter(10);
+        readonly LowPassFilter _lowPassFilter = new LowPassFilter(3);
 
         public double GetAngle(AccelerationAndGyroData data, double dt)
         {
@@ -18,6 +19,6 @@ namespace Sirius
             _angle = a * (data.GetPitchVelocity() * dt + _angle) + (1 - a) * _lowPassFilter.GetLowPassValue(data.GetPitchAngle(), dt);
             return _angle;
         }
-
+        */
     }
 }

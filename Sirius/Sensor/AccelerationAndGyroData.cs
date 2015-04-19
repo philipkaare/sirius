@@ -36,21 +36,59 @@ namespace ExampleAccelGyroSensor.Sensor
         public int Gyro_Z;
 
         private const double AngularVelocityCorrection = -0.02;
-        private const double PitchCorrection = 0.31;
+        private const double PitchCorrection = 0.020;
 
-        public double GetPitchAngle()
+        const double PI_double =  3.14159265;
+        const double PIBY2_double = 1.5707963;
+        
+        double atan2_approximation2( double y, double x )
+        {
+            if ( x == 0.0f )
+            {
+                if ( y > 0.0f ) 
+                    return PIBY2_double;
+                if ( y == 0.0f ) 
+                    return 0.0f;
+                return -PIBY2_double;
+            }
+            
+            double atan;
+            double z = y/x;
+            
+            if ( z  < 1.0 && z > -1.0 )
+            {
+                atan = z/(1.0f + 0.28f*z*z);
+                if ( x < 0.0f )
+                {
+                    if ( y < 0.0f ) 
+                        return atan - PI_double;
+                    return atan + PI_double;
+                }
+            }
+            else
+            {
+                atan = PIBY2_double - z/(z*z + 0.28f);
+                if ( y < 0.0f ) 
+                    return atan - PI_double;
+            }
+            return atan;
+        } 
+
+        public double GetPitchAngleInDegrees()
         {
             if (Acceleration_Z == 0)
                 return 0;
 
-            double z = (double)Acceleration_Y/(double)Acceleration_Z;
+            var angle = (atan2_approximation2(Acceleration_Y,Acceleration_Z) + PitchCorrection) * 180.0 /PI_double;
 
-            return  -0.30097 + 0.61955 * z - 0.001659 * z * z + PitchCorrection;
+            Debug.Print(angle.ToString());
+
+            return angle;
         }
 
-        public double GetPitchVelocity()
+        public double GetPitchVelocityInDegreesPerSecond()
         {
-            return (double)Gyro_X / 7500.0 - AngularVelocityCorrection; //Magic number!
+            return (double)Gyro_X / 131.1 - AngularVelocityCorrection; //Magic number!
         }
 
         private static int ConvertBytes(byte highByte, byte lowByte)

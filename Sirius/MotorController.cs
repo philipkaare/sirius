@@ -55,11 +55,15 @@ namespace Sirius
                 _speed = value;
                 if (value > 0)
                 {
+                    if (value > 1)
+                        value = 1;
                     _forwardpwm.DutyCycle = value;
                     _reversepwm.DutyCycle = 0;
                 }
                 else
                 {
+                    if (value < -1)
+                        value = -1;
                     _forwardpwm.DutyCycle = 0;
                     _reversepwm.DutyCycle = -value;
                 }

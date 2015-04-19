@@ -21,24 +21,21 @@ namespace Sirius
 
         private static bool FailSafeEnabled = false;
 
-        private static readonly InterruptPort Channel1 = new InterruptPort(Pins.GPIO_PIN_A1, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeBoth);
-        private static readonly InterruptPort Channel2 = new InterruptPort(Pins.GPIO_PIN_A2, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeBoth);
+        private static InterruptPort Channel1 = new InterruptPort(Pins.GPIO_PIN_A1, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeBoth);
+        private static InterruptPort Channel2 = new InterruptPort(Pins.GPIO_PIN_A2, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeBoth);
             
         private static OutputPort _ledPort = new OutputPort(Pins.ONBOARD_LED, false);
 
-        private static readonly MPU6050 Mpu6050 = new MPU6050();
-        private static readonly ComplimentaryFilter Filter = new ComplimentaryFilter();
-        private static readonly MotorController Motor1 = new MotorController(9, 3);
-        private static readonly MotorController Motor2 = new MotorController(11, 6);
-        private static readonly GpioLcdTransferProvider LcdProvider = new GpioLcdTransferProvider(Pins.GPIO_PIN_D8, 
+        private static MPU6050 Mpu6050 = new MPU6050();
+        private static MotorController Motor1 = new MotorController(9, 3);
+        private static MotorController Motor2 = new MotorController(11, 6);
+        private static GpioLcdTransferProvider LcdProvider = new GpioLcdTransferProvider(Pins.GPIO_PIN_D8, 
             Pins.GPIO_PIN_D0, Pins.GPIO_PIN_D4, Pins.GPIO_PIN_D5, Pins.GPIO_PIN_D12, Pins.GPIO_PIN_D7);
 
-        private static readonly Lcd Lcd = new Lcd(LcdProvider);
+        private static Lcd Lcd = new Lcd(LcdProvider);
 
-        private static readonly PID4Life AnglePid = new PID4Life(250,0,-2.5,0);
-        private static readonly PID4Life VelocityPid = new PID4Life(1, 0, 0, 0);
-
-        private static readonly LowPassFilter VelocityLowPassFilter = new LowPassFilter(10);
+        private static PID4Life AnglePid = new PID4Life(8,0.01,-0.04,0);
+        private static PID4Life VelocityPid = new PID4Life(1, 0, 0, 0);
 
         private static long _channel1UpTimestamp = 0;
         private static double _channel1Value = 0;
@@ -50,7 +47,7 @@ namespace Sirius
         {
             lcd.Clear();
             lcd.SetCursorPosition(0,0);
-            lcd.Write(StringUtility.Format("P{0:D3}I.{1:D3}D{2:F1}", (int)pid4Life.K_p, (int)(pid4Life.K_i * 1000.0), pid4Life.K_d));
+            lcd.Write(StringUtility.Format("P{0:D3}I.{1:D3}D{2:F1}", (int)pid4Life.K_p, (int)(pid4Life.K_i * 100.0), pid4Life.K_d*10));
             switch (activeValue)
             {
                 case 0:
@@ -74,13 +71,13 @@ namespace Sirius
             switch (activeValue)
             {
                 case 0:
-                    pid.K_p += up ? 10 : -10;
+                    pid.K_p += up ? 1 : -1;
                     break;
                 case 1:
-                    pid.K_i += up ? 0.001 : -0.001;
+                    pid.K_i += up ? 0.01 : -0.01;
                     break;
                 case 2:
-                    pid.K_d += up ? 0.1 : -0.1;
+                    pid.K_d += up ? 0.01 : -0.01;
                     break;
             }
         }
@@ -117,7 +114,7 @@ namespace Sirius
         public static void InitLcd()
         {
             Lcd.Begin(16, 2);
-
+             
             Lcd.Clear();
             Lcd.SetCursorPosition(0, 0);
             Lcd.Write("Sirius online! ");
@@ -153,6 +150,10 @@ namespace Sirius
             FailSafeEnabled = false;
         }
 
+        static LowPassFilter lowPassFilter = new LowPassFilter(30);
+        //private static ComplimentaryFilter Filter = new ComplimentaryFilter();
+        private static Kalman filter = new Kalman();
+
         public static void Main()
         {   
             var lastTime = DateTime.Now;
@@ -170,14 +171,16 @@ namespace Sirius
                 ReadRadioKey();
 
                 var sensorResult = Mpu6050.GetSensorData();
-                var angle = Filter.GetAngle(sensorResult, dt);
-                var speed = AnglePid.GetCorrection(angle,dt);
+                var angle = filter.getAngle(sensorResult.GetPitchAngleInDegrees(), sensorResult.GetPitchVelocityInDegreesPerSecond() , dt);
+            //    var speed = lowPassFilter.GetLowPassValue(AnglePid.GetCorrection(angle, dt), dt);
+                var speed = AnglePid.GetCorrection(angle, dt);
 
-                VelocityPid.target = 0;//_channel2Value;
-                AnglePid.target = 0;//VelocityPid.GetCorrection(VelocityLowPassFilter.GetLowPassValue(speed, dt), dt);
-                Debug.Print(AnglePid.target.ToString());
+                VelocityPid.target = 0;
+                AnglePid.target = 0;
+                //Debug.Print(AnglePid.target.ToString());
+                //Debug.Print("dt " + dt);
 
-                if (Math.Abs(angle) > 0.5) 
+                if (Math.Abs(angle) > 30) 
                     FailSafeEnabled = true;
 
                 if (FailSafeEnabled)

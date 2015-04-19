@@ -53,6 +53,40 @@ namespace ExampleAccelGyroSensor.Sensor
                     else { Debug.Print("Status: OK"); }
             }
         }
+
+        private double _gyroOffset = 0;
+        private double _accOffset = 0;
+
+        public void CalibrateGyro()
+        {
+            double sampleSum = 0;
+
+            for (int i = 0; i < 25; i++)
+            {
+                sampleSum += GetSensorData().Gyro_X;
+                Thread.Sleep(10);
+
+            }
+            _gyroOffset = sampleSum/ 25.0;
+
+        }
+
+        public void CalibrateAccelerometer()
+        {
+            double sampleSum = 0;
+
+            for (int i = 0; i < 25; i++)
+            {
+                sampleSum += GetSensorData().GetPitchAngleInDegrees();
+                Thread.Sleep(10);
+
+            }
+            _accOffset = sampleSum / 25.0 + 90;
+
+            Debug.Print("_accOffset: " + _accOffset);
+        }
+
+
         /// <summary>
         /// Ruft die Daten aus dem Sensor ab
         /// </summary>
@@ -77,8 +111,8 @@ namespace ExampleAccelGyroSensor.Sensor
 
             _I2C.Write(new byte[] { MPU6050_Registers.ACCEL_XOUT_H });
             _I2C.Read(registerList);
-
-            return new AccelerationAndGyroData(registerList);
+            
+            return new AccelerationAndGyroData(registerList, _gyroOffset, _accOffset);
         }
     }
 }

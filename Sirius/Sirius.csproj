@@ -55,7 +55,7 @@
     <Reference Include="Microsoft.SPOT.Net" />
     <Reference Include="NetMf.CommonExtensions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\CommonExtensions\NetMf.CommonExtensions\bin\Debug\NetMf.CommonExtensions.dll</HintPath>
+      <HintPath>..\NetMf.CommonExtensions.dll</HintPath>
     </Reference>
     <Reference Include="SecretLabs.NETMF.Hardware, Version=4.3.1.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="SecretLabs.NETMF.Hardware.Netduino, Version=4.3.1.0, Culture=neutral, processorArchitecture=MSIL" />

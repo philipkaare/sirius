@@ -34,12 +34,13 @@ namespace ExampleAccelGyroSensor.Sensor
         /// Z Achse des Gyroskop
         /// </summary>
         public int Gyro_Z;
-
-        private const double AngularVelocityCorrection = -0.02;
-        private const double PitchCorrection = 0.020;
+        
+        private double _pitchCorrection;
 
         const double PI_double =  3.14159265;
         const double PIBY2_double = 1.5707963;
+
+        private double gyroOffset;
         
         double atan2_approximation2( double y, double x )
         {
@@ -79,16 +80,16 @@ namespace ExampleAccelGyroSensor.Sensor
             if (Acceleration_Z == 0)
                 return 0;
 
-            var angle = (atan2_approximation2(Acceleration_Y,Acceleration_Z) + PitchCorrection) * 180.0 /PI_double;
-
-            Debug.Print(angle.ToString());
+            var angle = (atan2_approximation2(Acceleration_Y,Acceleration_Z)) * 180.0 /PI_double;
+            angle -= _pitchCorrection;
+            Debug.Print("Pitch angle post correct: " + angle.ToString());
 
             return angle;
         }
 
         public double GetPitchVelocityInDegreesPerSecond()
         {
-            return (double)Gyro_X / 131.1 - AngularVelocityCorrection; //Magic number!
+            return (double) (Gyro_X-gyroOffset)/131.1; 
         }
 
         private static int ConvertBytes(byte highByte, byte lowByte)
@@ -103,7 +104,7 @@ namespace ExampleAccelGyroSensor.Sensor
         /// Erstellt das Objekt mit den Ergebnissen
         /// </summary>
         /// <param name="results"></param>
-        public AccelerationAndGyroData(byte[] results)
+        public AccelerationAndGyroData(byte[] results, double gyroOffset, double accOffset)
         {
             Acceleration_X = ConvertBytes(results[0], results[1]);
             Acceleration_Y = ConvertBytes(results[2], results[3]); 
@@ -116,6 +117,8 @@ namespace ExampleAccelGyroSensor.Sensor
             Gyro_X = ConvertBytes(results[8], results[9]);
             Gyro_Y = ConvertBytes(results[10], results[11]);
             Gyro_Z = ConvertBytes(results[12], results[13]);
+            this.gyroOffset = gyroOffset;
+            _pitchCorrection = accOffset;
         }
 
         /// <summary>
